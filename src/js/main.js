@@ -14,10 +14,11 @@ function preload() {
 
 class gameKeeper {
     constructor() {
-        this.style   = {fill: "#ff0044", align: "center"};
+        this.style      = {fill: "#ff0044", align: "center"};
         this.scoreText;
-        this.score   = 0;
-        this.enemies = 15;
+        this.score      = 0;
+        this.enemies    = 15;
+        this.difficulty = 1;
     }
     enemyKilled() {
         this.enemies--;
@@ -33,9 +34,9 @@ class gameKeeper {
         this.score   = 0;
         this.enemies = 15;
         this.scoreText.text = 0;
-        //alienG.render();
         spaceship.x = game.world.width / 2;
         spaceship.y = game.world.height - 65;
+        this.difficulty++;
     }
 }
 var spaceship;
@@ -45,6 +46,7 @@ var gameMaster = new gameKeeper();
 var alienG;
 var blasterSound;
 var cheeringSound;
+var tempX;
 
 
 function create() {
@@ -66,6 +68,7 @@ function create() {
     gameMaster.scoreText = game.add.text(15, 15, String(gameMaster.score), gameMaster.style);
     blasterSound  = game.add.audio('bulletFire');
     cheeringSound = game.add.audio('cheeringSound');
+    tempX = game.world.x + aliens.x;
 }
 
 function update() {
@@ -75,6 +78,7 @@ function update() {
         cheeringSound.play();
         gameMaster.reset();
     }
+    alienG.sway();
 }
 
 function kill(sprite1, sprite2) {
@@ -104,8 +108,9 @@ class alienGroup {
         this.cols     = 5;
         this.paddingX = 70;
         this.paddingY = 70;
-        this.x        = 125;
+        this.x        = 135;
         this.y        = 100;
+        this.swayS    = 'right';
     }
     render () {
         let alien;
@@ -115,6 +120,17 @@ class alienGroup {
                 game.physics.arcade.enable(alien, Phaser.Physics.ARCADE);
                 aliens.add(alien);
             }
+        }
+    }
+    sway () {
+        let motion = 75;
+        if (aliens.x <= tempX + motion && this.swayS == 'right'){
+            if (aliens.x == tempX + motion){this.swayS = 'left'};
+            aliens.x += gameMaster.difficulty;
+        }
+        else if (aliens.x >= tempX - motion && this.swayS == 'left'){
+            if (aliens.x == tempX - motion){this.swayS = 'right'};
+            aliens.x -= gameMaster.difficulty;
         }
     }
 }
