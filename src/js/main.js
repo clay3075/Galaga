@@ -1,3 +1,18 @@
+String.prototype.spliceForTimer = function() {
+    delCount = 0;
+    newSubStr = "."
+    if (this.length === 5) {
+        start = 2;
+    }
+    else if (this.length === 4) {
+        start = 1
+    }
+    else {
+        return 0;
+    }
+    return this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount));
+};
+
 var game = new Phaser.Game(600, 600, Phaser.AUTO, '', {preload: preload, create: create, update: update });
 
 function preload() {
@@ -16,11 +31,10 @@ class gameKeeper {
     constructor() {
         this.style      = {fill: "#ff0044", align: "center"};
         this.scoreText;
+        this.timerText;
         this.score      = 0;
         this.enemies    = 15;
         this.difficulty = 1;
-        //start timer
-        //this.timer;
     }
     enemyKilled() {
         this.enemies--;
@@ -38,10 +52,12 @@ class gameKeeper {
         alienG.update();
     }
     resetHard() {
+        console.log("good");
         var temp = game.add.text(game.world.width / 2 - 50, game.world.height / 2, "Times Up!!", this.style);
         setTimeout(function() {
             temp.kill();
             alienG.render();
+            game.time.events.add(60000, gameMaster.gameOver, this);
         }, 3000);
         this.score      = 0;
         this.difficulty = 1;
@@ -49,12 +65,10 @@ class gameKeeper {
         this.scoreText.text = 0;
         spaceship.x = game.world.width / 2;
         spaceship.y = game.world.height - 65;
-        //reset timer
-        //this.timer.add(60, this.gameOver);
-        //this.timer.start();
     }
     gameOver() {
-        this.resetHard();
+        //console.log('good')
+        gameMaster.resetHard();
     };
 }
 var spaceship;
@@ -87,13 +101,13 @@ function create() {
     blasterSound  = game.add.audio('bulletFire');
     cheeringSound = game.add.audio('cheeringSound');
     tempX = game.world.x + aliens.x;
-    //this.timer = new Phaser.Timer(this.game);
-    //this.timer.add(60, gameMaster.gameOver);
-    //this.timer.start();
+    game.time.events.add(Phaser.Timer.SECOND * 5, gameMaster.gameOver, this);
+    gameMaster.timerText = game.add.text((game.world.width / 2) - 50, 15, "Time: " + String(game.time.events.duration).spliceForTimer(), gameMaster.style);
 }
 
 function update() {
     spaceship.x = game.input.x;
+    gameMaster.timerText.text = "Time: " + String(game.time.events.duration).spliceForTimer();
     game.physics.arcade.collide(bullets, aliens, kill);
     if (gameMaster.enemies == 0){
         cheeringSound.play();
