@@ -19,25 +19,43 @@ class gameKeeper {
         this.score      = 0;
         this.enemies    = 15;
         this.difficulty = 1;
+        //start timer
+        //this.timer;
     }
     enemyKilled() {
         this.enemies--;
         this.score += 100;
         this.scoreText.text = this.score;
     }
-    reset() {
-        var temp = game.add.text(game.world.width / 2 - 50, game.world.height / 2, "You Won!!", this.style);
+    enemyMissed() {
+        this.score -= 100;
+        this.scoreText.text = this.score;
+    }
+    resetSoft() {
+        alienG.render();
+        this.enemies = 15;
+        this.difficulty += .8;
+        alienG.update();
+    }
+    resetHard() {
+        var temp = game.add.text(game.world.width / 2 - 50, game.world.height / 2, "Times Up!!", this.style);
         setTimeout(function() {
             temp.kill();
             alienG.render();
         }, 3000);
-        this.score   = 0;
-        this.enemies = 15;
+        this.score      = 0;
+        this.difficulty = 1;
+        this.enemies    = 15;
         this.scoreText.text = 0;
         spaceship.x = game.world.width / 2;
         spaceship.y = game.world.height - 65;
-        this.difficulty++;
+        //reset timer
+        //this.timer.add(60, this.gameOver);
+        //this.timer.start();
     }
+    gameOver() {
+        this.resetHard();
+    };
 }
 var spaceship;
 var aliens;
@@ -69,6 +87,9 @@ function create() {
     blasterSound  = game.add.audio('bulletFire');
     cheeringSound = game.add.audio('cheeringSound');
     tempX = game.world.x + aliens.x;
+    //this.timer = new Phaser.Timer(this.game);
+    //this.timer.add(60, gameMaster.gameOver);
+    //this.timer.start();
 }
 
 function update() {
@@ -76,7 +97,7 @@ function update() {
     game.physics.arcade.collide(bullets, aliens, kill);
     if (gameMaster.enemies == 0){
         cheeringSound.play();
-        gameMaster.reset();
+        gameMaster.resetSoft();
     }
     alienG.sway();
 }
@@ -97,7 +118,8 @@ function shoot() {
     game.physics.arcade.enable(bullet, Phaser.Physics.ARCADE);
     bullet.body.velocity.y = -400;
     bullet.body.velocity.x = 0;
-    bullet.events.onOutOfBounds.add(kill, this);
+    bullet.checkWorldBounds = true;
+    bullet.events.onOutOfBounds.add(function(sprite){sprite.kill();gameMaster.enemyMissed()}, this);
     bullets.add(bullet);
     blasterSound.play();
 }
@@ -111,6 +133,7 @@ class alienGroup {
         this.x        = 135;
         this.y        = 100;
         this.swayS    = 'right';
+        this.speed    = gameMaster.difficulty;
     }
     render () {
         let alien;
@@ -122,15 +145,18 @@ class alienGroup {
             }
         }
     }
+    update () {
+        this.speed = gameMaster.difficulty;
+    }
     sway () {
         let motion = 75;
-        if (aliens.x <= tempX + motion && this.swayS == 'right'){
-            if (aliens.x == tempX + motion){this.swayS = 'left'};
-            aliens.x += gameMaster.difficulty;
+        if (this.swayS == 'right'){
+            if (aliens.x >= tempX + motion){this.swayS = 'left'};
+            aliens.x += this.speed;
         }
-        else if (aliens.x >= tempX - motion && this.swayS == 'left'){
-            if (aliens.x == tempX - motion){this.swayS = 'right'};
-            aliens.x -= gameMaster.difficulty;
+        else if (this.swayS == 'left'){
+            if (aliens.x <= tempX - motion){this.swayS = 'right'};
+            aliens.x -= this.speed;
         }
     }
 }
