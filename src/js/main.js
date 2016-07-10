@@ -101,7 +101,7 @@ function create() {
     blasterSound  = game.add.audio('bulletFire');
     cheeringSound = game.add.audio('cheeringSound');
     tempX = game.world.x + aliens.x;
-    game.time.events.add(Phaser.Timer.SECOND * 5, gameMaster.gameOver, this);
+    game.time.events.add(Phaser.Timer.SECOND * 60, gameMaster.gameOver, this);
     gameMaster.timerText = game.add.text((game.world.width / 2) - 50, 15, "Time: " + String(game.time.events.duration).spliceForTimer(), gameMaster.style);
 }
 
@@ -113,6 +113,7 @@ function update() {
         cheeringSound.play();
         gameMaster.resetSoft();
     }
+    alienG.update();
     alienG.sway();
 }
 
